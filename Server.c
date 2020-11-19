@@ -8,6 +8,11 @@
 #define MAXREQ 20
 #define MAXQUEUE 5
 
+void error(const char *msg){
+  perror(msg);
+  exit(1);
+}
+
 void server(int consockfd) {
   char reqbuf[MAXREQ];
   int n;
@@ -33,6 +38,10 @@ struct sockaddr_in serv_addr, cli_addr;
 // Server protocol
 /* Create Socket to receive requests*/
 lstnsockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+if(lstnsockfd<0){
+  error("Error opening Sockets.");
+}
 
 /* Bind socket to port */
 bind(lstnsockfd, (struct sockaddr *)&serv_addr,sizeof(serv_addr));
