@@ -30,7 +30,7 @@ void client(int sockfd) {
     
     memset(rcvbuf,0,MAXOUT);               /* clear */
     n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
-    printf("Received reply: %d/n",n);
+    printf("Received reply: %d\n",n);
     
     write(STDOUT_FILENO, rcvbuf, n);	      /* echo */
     getreq(sndbuf, MAXIN);                 /* prompt */
