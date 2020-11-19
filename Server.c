@@ -19,6 +19,7 @@ void server(int consockfd) {
   while (1) {                   
     memset(reqbuf,0, MAXREQ);
     n = read(consockfd,reqbuf,MAXREQ-1); /* Recv */
+    
     printf("Recvd msg:%s\n", reqbuf);
     if (n <= 0) return;
     n = write(consockfd, reqbuf, strlen(reqbuf)); /* echo*/
@@ -44,7 +45,9 @@ if(lstnsockfd<0){
 }
 
 /* Bind socket to port */
-bind(lstnsockfd, (struct sockaddr *)&serv_addr,sizeof(serv_addr));
+if(bind(lstnsockfd, (struct sockaddr *)&serv_addr,sizeof(serv_addr))<0){
+  error("binding failed");
+}
 printf("Bounded to port\n");
 while (1) {
    printf("Listening for incoming connections\n");
@@ -57,6 +60,10 @@ while (1) {
 /* Accept incoming connection, obtaining a new socket for it */
    consockfd = accept(lstnsockfd, (struct sockaddr *) &cli_addr,       
                       &clilen);
+
+    if(consockfd<0){
+      error("Error on Accepting");
+    }
    printf("Accepted connection\n");
 
    server(consockfd);

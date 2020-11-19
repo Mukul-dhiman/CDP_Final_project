@@ -12,6 +12,11 @@
 #define MAXIN 20
 #define MAXOUT 20
 
+void error(const char *msg){
+  perror(msg);
+  exit(1);
+}
+
 char *getreq(char *inbuf, int len) {
   /* Get request char stream */
   printf("REQ: ");              /* prompt */
@@ -30,7 +35,7 @@ void client(int sockfd) {
     
     memset(rcvbuf,0,MAXOUT);               /* clear */
     n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
-    printf("Received reply: %d\n",n);
+    printf("Received reply: %d %s\n",n,rcvbuf);
     
     write(STDOUT_FILENO, rcvbuf, n);	      /* echo */
     getreq(sndbuf, MAXIN);                 /* prompt */
@@ -59,9 +64,14 @@ int main() {
 
 	/* Create a TCP socket */
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if(sockfd<0){
+    error("Error opening socket");
+  }
 
 	/* Connect to server on port */
-	connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+	if(connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))<0){
+    error("Connection Failed");
+  }
 	printf("Connected to %s:%d\n",serverIP, portno);
 
 	/* Carry out Client-Server protocol */
