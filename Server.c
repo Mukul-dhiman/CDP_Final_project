@@ -25,11 +25,39 @@ void remove_end_character(char* string){
 }
 
 //socket for servers
-int lstnsockfd,current_number_of_users; 
+int lstnsockfd,current_number_of_users,n; 
+void main_menu(int consockfd,char* name){
+  char option[MAXREQ];
+  memset(option,0, MAXREQ);
+  n = read(consockfd,option,MAXREQ-1); /* Recv */
+  remove_end_character(option);
+  printf("user %s Selected %s mode\n", name,option);
+  if (n <= 0) return;
+  n = write(consockfd, option, strlen(option)); /* echo*/
+  printf("%s",option);
+  if(option[0]=='A'){
+    //Admin
+
+
+
+  }
+  else if(option[0]=='I'){
+    //Individual
+
+
+
+  }
+  else{
+    //Group
+    
+
+    
+
+  }
+}
 
 void server(int consockfd) {
-  char reqbuf[MAXREQ],name[MAXREQ],option[MAXREQ];
-  int n;
+  char reqbuf[MAXREQ],name[MAXREQ];
 
   memset(name,0, MAXREQ);
   n = read(consockfd,name,MAXREQ-1); /* Recv */
@@ -38,13 +66,7 @@ void server(int consockfd) {
   if (n <= 0) return;
   n = write(consockfd, name, strlen(name)); /* echo*/
   
-  memset(option,0, MAXREQ);
-  n = read(consockfd,option,MAXREQ-1); /* Recv */
-  remove_end_character(option);
-  printf("user %s Selected %s option\n", name,option);
-  if (n <= 0) return;
-  n = write(consockfd, option, strlen(option)); /* echo*/
-  
+  main_menu(consockfd,name);
 
   while (1) {                   
     memset(reqbuf,0, MAXREQ);

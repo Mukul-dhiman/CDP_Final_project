@@ -17,6 +17,16 @@ void error(const char *msg){
   exit(1);
 }
 
+void remove_end_character(char* string){
+  int len = strlen(string);
+  // len-1 is the last character before the original \0
+  if(len > 0 && string[len-1] == '\n'){
+    // remove the new-line by ending the string sooner
+    string[len-1] = '\0';
+  }
+  return;
+}
+
 char *getreq(char *inbuf, int len) {
   /* Get request char stream */
   printf("REQ: ");              /* prompt */
@@ -61,18 +71,33 @@ void from_main_menu(int sockfd){
   if(n<0){
     error("Error in read");
   }
-  if(strcmp(option,"A")){
-    //Admin mode
-    printf("wow");
+  remove_end_character(option);
+  printf("%s",option);
+  if(option[0]=='A'){
+    //Admin
+    printf("Now you are in Admin mode");
+
+
+
+
+
   }
-  else if(strcmp(option,"I")){
-    //Individual mode
-    printf("wow1");
+  else if(option[0]=='I'){
+    //Individual
+    printf("Now you are in Individual Quiz mode");
+
+
+
+
 
   }
   else{
-    //Group mode 
-    printf("wow2");
+    //Group
+    printf("Now you are in Group Quiz mode");
+
+
+
+    
 
   }
   
@@ -115,7 +140,11 @@ void client(int sockfd) {
   }
 
   if(rcvbuf){
-    printf("Welcome %s to online Quiz on OS\n",rcvbuf);
+    printf("**************************************\n");
+    printf("*                                    *\n");
+    printf("   Welcome %s to online Quiz on OS \n",rcvbuf);
+    printf("*                                    *\n");
+    printf("**************************************\n");
   }
 
   from_main_menu(sockfd);
