@@ -24,6 +24,8 @@ void remove_end_character(char* string){
   return;
 }
 
+char user_name[MAXQUEUE][20];
+
 //socket for servers
 int lstnsockfd,current_number_of_users,n; 
 void main_menu(int consockfd,char* name){
@@ -34,7 +36,6 @@ void main_menu(int consockfd,char* name){
   printf("user %s Selected %s mode\n", name,option);
   if (n <= 0) return;
   n = write(consockfd, option, strlen(option)); /* echo*/
-  printf("%s",option);
   if(option[0]=='A'){
     //Admin
 
@@ -51,12 +52,12 @@ void main_menu(int consockfd,char* name){
     //Group
     
 
-    
+
 
   }
 }
 
-void server(int consockfd) {
+void server(int consockfd,int thread_id) {
   char reqbuf[MAXREQ],name[MAXREQ];
 
   memset(name,0, MAXREQ);
@@ -66,16 +67,23 @@ void server(int consockfd) {
   if (n <= 0) return;
   n = write(consockfd, name, strlen(name)); /* echo*/
   
+  memset(user_name[thread_id],0,20);
+  for(int i=0;i<strlen(name);i++){
+    user_name[thread_id][i]=name[i];
+  }
+
   main_menu(consockfd,name);
 
-  while (1) {                   
-    memset(reqbuf,0, MAXREQ);
-    n = read(consockfd,reqbuf,MAXREQ-1); /* Recv */
+  
+
+  // while (1) {                   
+  //   memset(reqbuf,0, MAXREQ);
+  //   n = read(consockfd,reqbuf,MAXREQ-1); /* Recv */
     
-    printf("Recvd msg:%s\n", reqbuf);
-    if (n <= 0) return;
-    n = write(consockfd, reqbuf, strlen(reqbuf)); /* echo*/
-  }
+  //   printf("Recvd msg:%s\n", reqbuf);
+  //   if (n <= 0) return;
+  //   n = write(consockfd, reqbuf, strlen(reqbuf)); /* echo*/
+  // }
 }
 
 
@@ -109,7 +117,7 @@ static void* go(void* arg){
     current_number_of_users++;
     printf("Accepted connection, current user %d\n",current_number_of_users);
 
-    server(consockfd);
+    server(consockfd,thread_id);
 
     close(consockfd);
     current_number_of_users--;

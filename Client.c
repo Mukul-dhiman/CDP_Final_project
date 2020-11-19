@@ -72,7 +72,6 @@ void from_main_menu(int sockfd){
     error("Error in read");
   }
   remove_end_character(option);
-  printf("%s",option);
   if(option[0]=='A'){
     //Admin
     printf("Now you are in Admin mode");
@@ -97,7 +96,7 @@ void from_main_menu(int sockfd){
 
 
 
-    
+
 
   }
   
