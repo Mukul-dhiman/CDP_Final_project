@@ -15,7 +15,7 @@ void error(const char *msg){
 }
 
 //socket for servers
-int lstnsockfd; 
+int lstnsockfd,current_number_of_users; 
 
 void server(int consockfd) {
   char reqbuf[MAXREQ];
@@ -58,11 +58,13 @@ static void* go(void* arg){
     if(consockfd<0){
       error("Error on Accepting");
     }
-    printf("Accepted connection\n");
+    current_number_of_users++;
+    printf("Accepted connection, current user %d\n",current_number_of_users);
 
     server(consockfd);
 
     close(consockfd);
+    current_number_of_users--;
   }
   
 	pthread_exit(&(thread_id)+100);  //(int*)(100 + n)
@@ -74,7 +76,7 @@ static void* go(void* arg){
 static pthread_t threads[MAXQUEUE];
 
 int main(int argc,char **argv){
-
+  current_number_of_users=0;
   int portno = 5033;
   struct sockaddr_in serv_addr, cli_addr;
 
