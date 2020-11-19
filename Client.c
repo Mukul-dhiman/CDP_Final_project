@@ -24,21 +24,30 @@ char *getreq(char *inbuf, int len) {
   return fgets(inbuf,len,stdin); /* read up to a EOL */
 }
 
+
 void client(int sockfd) {
   int n;
   char sndbuf[MAXIN]; char rcvbuf[MAXOUT];
-  getreq(sndbuf, MAXIN);        /* prompt */
-  while (strlen(sndbuf) > 0) {
-    write(sockfd, sndbuf, strlen(sndbuf)); /* send */
-
+  while(1){
+    getreq(sndbuf, MAXIN);
+    if(sndbuf=="q"){
+      break;
+    }
+    n=write(sockfd, sndbuf, strlen(sndbuf)); /* send */
+    if(n<0){
+      error("Error on Write");
+    }
     printf("Wrote message: %s\n",sndbuf);
     
     memset(rcvbuf,0,MAXOUT);               /* clear */
     n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
-    printf("Received reply: %d %s\n",n,rcvbuf);
     
-    write(STDOUT_FILENO, rcvbuf, n);	      /* echo */
-    getreq(sndbuf, MAXIN);                 /* prompt */
+    if(n<0){
+      error("Error in read");
+    }
+
+    printf("Received reply: %d\n",n);
+    
   }
 }
 
