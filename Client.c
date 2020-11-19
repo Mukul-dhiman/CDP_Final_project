@@ -24,10 +24,37 @@ char *getreq(char *inbuf, int len) {
   return fgets(inbuf,len,stdin); /* read up to a EOL */
 }
 
+char *get_name(char *inbuf, int len) {
+  /* Get request char stream */
+  printf("Enter Your Name: ");              /* prompt */
+  memset(inbuf,0,len);          /* clear for good measure */
+  return fgets(inbuf,len,stdin); /* read up to a EOL */
+}
+
 
 void client(int sockfd) {
   int n;
-  char sndbuf[MAXIN]; char rcvbuf[MAXOUT];
+  char sndbuf[MAXIN], rcvbuf[MAXOUT],name[MAXIN];
+  get_name(name,MAXIN);
+  if(name=="q"){
+    printf("Exiting ");
+    return;
+  }
+  n=write(sockfd, name, strlen(name)); /* send */
+  if(n<0){
+     error("Error on Write");
+  }
+    
+  memset(rcvbuf,0,MAXOUT);               /* clear */
+  n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
+  if(n<0){
+    error("Error in read");
+  }
+
+  if(rcvbuf){
+    printf("Name Registor as: %s\n",rcvbuf);
+  }
+
   while(1){
     getreq(sndbuf, MAXIN);
     if(sndbuf=="q"){

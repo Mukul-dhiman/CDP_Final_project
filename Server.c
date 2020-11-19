@@ -18,8 +18,15 @@ void error(const char *msg){
 int lstnsockfd,current_number_of_users; 
 
 void server(int consockfd) {
-  char reqbuf[MAXREQ];
+  char reqbuf[MAXREQ],name[MAXREQ];
   int n;
+
+  memset(name,0, MAXREQ);
+  n = read(consockfd,name,MAXREQ-1); /* Recv */
+  printf("user name registored as:%s\n", name);
+  if (n <= 0) return;
+  n = write(consockfd, name, strlen(name)); /* echo*/
+  
   while (1) {                   
     memset(reqbuf,0, MAXREQ);
     n = read(consockfd,reqbuf,MAXREQ-1); /* Recv */
