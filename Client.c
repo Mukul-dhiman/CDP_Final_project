@@ -62,7 +62,7 @@ struct hostent *buildServerAddr(struct sockaddr_in *serv_addr,
  }
 
 
-int main() {
+int main(int argc,char **argv){
 	//Client protocol
 	// char *serverIP = "13.126.97.198";
   char *serverIP = "127.0.0.1";
