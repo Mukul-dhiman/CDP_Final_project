@@ -14,19 +14,38 @@ void error(const char *msg){
   exit(1);
 }
 
+void remove_end_character(char* string){
+  int len = strlen(string);
+  // len-1 is the last character before the original \0
+  if(len > 0 && string[len-1] == '\n'){
+    // remove the new-line by ending the string sooner
+    string[len-1] = '\0';
+  }
+  return;
+}
+
 //socket for servers
 int lstnsockfd,current_number_of_users; 
 
 void server(int consockfd) {
-  char reqbuf[MAXREQ],name[MAXREQ];
+  char reqbuf[MAXREQ],name[MAXREQ],option[MAXREQ];
   int n;
 
   memset(name,0, MAXREQ);
   n = read(consockfd,name,MAXREQ-1); /* Recv */
+  remove_end_character(name);
   printf("user name registored as:%s\n", name);
   if (n <= 0) return;
   n = write(consockfd, name, strlen(name)); /* echo*/
   
+  memset(option,0, MAXREQ);
+  n = read(consockfd,option,MAXREQ-1); /* Recv */
+  remove_end_character(option);
+  printf("user %s Selected %s option\n", name,option);
+  if (n <= 0) return;
+  n = write(consockfd, option, strlen(option)); /* echo*/
+  
+
   while (1) {                   
     memset(reqbuf,0, MAXREQ);
     n = read(consockfd,reqbuf,MAXREQ-1); /* Recv */

@@ -31,18 +31,81 @@ char *get_name(char *inbuf, int len) {
   return fgets(inbuf,len,stdin); /* read up to a EOL */
 }
 
+char *get_option(char *inbuf, int len) {
+  /* Get request char stream */
+  printf("press I for individual mode\n");              /* prompt */
+  printf("press G for Group mode\n"); 
+  printf("press A for Admin mode\n"); 
+  memset(inbuf,0,len);          /* clear for good measure */
+  return fgets(inbuf,len,stdin); /* read up to a EOL */
+}
+
+
+int n;
+char sndbuf[MAXIN], rcvbuf[MAXOUT],name[MAXIN];
+void from_main_menu(int sockfd){
+  char option[MAXIN];
+  get_option(option,MAXIN);
+  while (!strcmp(option,"A") && !strcmp(option,"G") && !strcmp(option,"I")){
+    printf("Enter valid option\n");
+    get_option(option,MAXIN);
+  }
+  
+  n=write(sockfd, option, strlen(option)); /* send */
+  if(n<0){
+     error("Error on selection mode");
+  }
+    
+  memset(rcvbuf,0,MAXOUT);               /* clear */
+  n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
+  if(n<0){
+    error("Error in read");
+  }
+  if(strcmp(option,"A")){
+    //Admin mode
+    printf("wow");
+  }
+  else if(strcmp(option,"I")){
+    //Individual mode
+    printf("wow1");
+
+  }
+  else{
+    //Group mode 
+    printf("wow2");
+
+  }
+  
+
+
+  // while(1){
+  //   getreq(sndbuf, MAXIN);
+  //   if(sndbuf=="q"){
+  //     break;
+  //   }
+  //   n=write(sockfd, sndbuf, strlen(sndbuf)); /* send */
+  //   if(n<0){
+  //     error("Error on Write");
+  //   }
+  //   printf("Wrote message: %s\n",sndbuf);
+    
+  //   memset(rcvbuf,0,MAXOUT);               /* clear */
+  //   n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
+    
+  //   if(n<0){
+  //     error("Error in read");
+  //   }
+
+  //   printf("Received reply: %d\n",n);
+    
+  // }
+}
 
 void client(int sockfd) {
-  int n;
-  char sndbuf[MAXIN], rcvbuf[MAXOUT],name[MAXIN];
   get_name(name,MAXIN);
-  if(name=="q"){
-    printf("Exiting ");
-    return;
-  }
   n=write(sockfd, name, strlen(name)); /* send */
   if(n<0){
-     error("Error on Write");
+     error("Error on Write name");
   }
     
   memset(rcvbuf,0,MAXOUT);               /* clear */
@@ -52,30 +115,10 @@ void client(int sockfd) {
   }
 
   if(rcvbuf){
-    printf("Name Registor as: %s\n",rcvbuf);
+    printf("Welcome %s to online Quiz on OS\n",rcvbuf);
   }
 
-  while(1){
-    getreq(sndbuf, MAXIN);
-    if(sndbuf=="q"){
-      break;
-    }
-    n=write(sockfd, sndbuf, strlen(sndbuf)); /* send */
-    if(n<0){
-      error("Error on Write");
-    }
-    printf("Wrote message: %s\n",sndbuf);
-    
-    memset(rcvbuf,0,MAXOUT);               /* clear */
-    n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
-    
-    if(n<0){
-      error("Error in read");
-    }
-
-    printf("Received reply: %d\n",n);
-    
-  }
+  from_main_menu(sockfd);
 }
 
 // Server address
