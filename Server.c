@@ -56,7 +56,7 @@ void main_menu(int consockfd,char* name){
         printf("%s, ",user_name[i]);
       }
     }
-    printf("specify user name with whom you want to collaborate");
+    printf("specify user name with whom you want to collaborate\n");
 
 
 
@@ -81,6 +81,7 @@ void server(int consockfd,int thread_id) {
 
   main_menu(consockfd,name);
 
+  //crearing user
   memset(user_name[thread_id],0,sizeof(user_name[thread_id]));
   
 
