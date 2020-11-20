@@ -42,16 +42,7 @@ struct question{
 struct database{
   struct question* head;
   int number_of_questions;
-  void add_question(char Question_type,char Question_text,char Answer,char Explanation){
-    // add question with uniqe id
-
-
-  }
-  void delete(int id){
-    // delete question with that id
-
-
-  }
+  
 };
 
 struct database Quiz_data;
