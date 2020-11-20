@@ -24,6 +24,38 @@ void remove_end_character(char* string){
   return;
 }
 
+
+struct data_vector{
+  int id;
+  char Question_type[20];
+  char Question_text[200];
+  char Answer[20];
+  char explanation[200];
+};
+
+struct question{
+  /* data */
+  struct data_vector question_data;
+  struct database* next;
+};
+
+struct database{
+  struct question* head;
+  int number_of_questions;
+  void add_question(char Question_type,char Question_text,char Answer,char Explanation){
+    // add question with uniqe id
+
+
+  }
+  void delete(int id){
+    // delete question with that id
+
+
+  }
+};
+
+struct database Quiz_data;
+
 char user_name[MAXQUEUE][20];
 
 //socket for servers
