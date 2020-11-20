@@ -38,7 +38,7 @@ void main_menu(int consockfd,char* name){
   n = write(consockfd, option, strlen(option)); /* echo*/
   if(option[0]=='A'){
     //Admin
-
+  
 
 
   }
@@ -50,7 +50,14 @@ void main_menu(int consockfd,char* name){
   }
   else{
     //Group
-    
+    printf("Active Users are ");
+    for(int i=0;i<MAXQUEUE;i++){
+      if(user_name[i]){
+        printf("%s, ",user_name[i]);
+      }
+    }
+    printf("specify user name with whom you want to collaborate");
+
 
 
 
@@ -74,6 +81,7 @@ void server(int consockfd,int thread_id) {
 
   main_menu(consockfd,name);
 
+  memset(user_name[thread_id],0,sizeof(user_name[thread_id]));
   
 
   // while (1) {                   
