@@ -8,9 +8,18 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <stdbool.h> 
 
 #define MAXIN 20
 #define MAXOUT 20
+
+void Individual_mode(int sockfd);
+void from_main_menu(int sockfd);
+
+
+int n;
+char sndbuf[MAXIN], rcvbuf[MAXOUT],name[MAXIN];
+
 
 void error(const char *msg){
   perror(msg);
@@ -51,8 +60,129 @@ char *get_option(char *inbuf, int len) {
 }
 
 
-int n;
-char sndbuf[MAXIN], rcvbuf[MAXOUT],name[MAXIN];
+
+char *get_topic_input(char *Request,int len){
+  memset(Request,0,len);          /* clear for good measure */
+  return fgets(Request,len,stdin); /* read up to a EOL */
+}
+
+
+char *get_next_request(char *next_request,int len){
+  printf("To attempt another question press 'n';\n");
+  printf("press 'q' to quit;\n");
+  printf("press 'r' to return to main menu\n");
+  memset(next_request,0,len);          /* clear for good measure */
+  return fgets(next_request,len,stdin); /* read up to a EOL */
+
+}
+
+char *get_answer(char *answer,int len){
+  printf("give your answer in options:");  
+  memset(answer,0,len);          /* clear for good measure */
+  return fgets(answer,len,stdin); /* read up to a EOL */
+
+}
+
+void show_all_topics(char* all_topics){
+  // showing all topics
+  printf("%s",all_topics);
+
+  return;
+}
+
+void question(char* question,int sockfd){
+  // represent question
+  printf("%s\n",question);
+
+  // get answer
+  char answer[MAXIN];
+  bool is_answer_correct=true;
+  get_answer(answer,MAXIN);
+  // check anwer is correct or not
+
+
+
+
+
+  if(is_answer_correct){
+    printf("correct ,");
+  }
+  else{
+    printf("wrong ,");
+  }
+  printf("Here is the explanation\n");
+  // print explanation
+
+
+
+  
+
+  char next_request[MAXIN];
+  get_next_request(next_request,MAXIN);
+  n=write(sockfd, next_request, strlen(next_request)); /* send */
+  if(n<0){
+    error("Error on requesting topics");
+  }
+  
+  memset(rcvbuf,0,MAXOUT);               /* clear */
+  n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
+  if(n<0){
+    error("Error in read topics");
+  }
+  remove_end_character(next_request);
+  if(strcmp(next_request,"n")==0){
+    printf("'n' pressed\n");
+    Individual_mode(sockfd);
+  }
+  else if(strcmp(next_request,"r")==0){
+    printf("'r' pressed\n");
+    from_main_menu(sockfd);
+  }
+  else if(strcmp(next_request,"q")==0){
+    printf("'q' pressed\n");
+    return;
+  }
+  else{
+    printf("invalid key pressed\n");
+  }
+  return;
+}
+
+
+void Individual_mode(int sockfd){
+  //Individual
+  char Request_topics[]="give_topics",Request[MAXIN];
+  n=write(sockfd, Request_topics, strlen(Request_topics)); /* send */
+  if(n<0){
+    error("Error on requesting topics");
+  }   
+  memset(rcvbuf,0,MAXOUT);               /* clear */
+  n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
+  if(n<0){
+    error("Error in read topics");
+  }
+
+  // this print statement will show all the topics listed
+  show_all_topics(rcvbuf);
+    
+  printf("\n");
+  //assuming client input valid topic 
+  get_topic_input(Request,MAXIN);
+
+  n=write(sockfd, Request, strlen(Request)); /* send */
+  if(n<0){
+    error("Error on requesting specific topics");
+  }
+    
+
+  memset(rcvbuf,0,MAXOUT);               /* clear */
+  n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
+  if(n<0){
+    error("Error in read topics");
+  }
+  question(rcvbuf,sockfd);
+}
+
 void from_main_menu(int sockfd){
   char option[MAXIN];
   get_option(option,MAXIN);
@@ -75,24 +205,20 @@ void from_main_menu(int sockfd){
   if(option[0]=='A'){
     //Admin
     printf("Now you are in Admin mode");
-
+    
 
 
 
 
   }
   else if(option[0]=='I'){
-    //Individual
-    printf("Now you are in Individual Quiz mode");
-
-
-
-
+    printf("Now you are in Individual Quiz mode\n");
+    Individual_mode(sockfd);
 
   }
   else{
     //Group
-    printf("Now you are in Group Quiz mode");
+    printf("Now you are in Group Quiz mode\n");
 
 
 
@@ -100,29 +226,6 @@ void from_main_menu(int sockfd){
 
   }
   
-
-
-  // while(1){
-  //   getreq(sndbuf, MAXIN);
-  //   if(sndbuf=="q"){
-  //     break;
-  //   }
-  //   n=write(sockfd, sndbuf, strlen(sndbuf)); /* send */
-  //   if(n<0){
-  //     error("Error on Write");
-  //   }
-  //   printf("Wrote message: %s\n",sndbuf);
-    
-  //   memset(rcvbuf,0,MAXOUT);               /* clear */
-  //   n=read(sockfd, rcvbuf, MAXOUT-1);      /* receive */
-    
-  //   if(n<0){
-  //     error("Error in read");
-  //   }
-
-  //   printf("Received reply: %d\n",n);
-    
-  // }
 }
 
 void client(int sockfd) {
@@ -147,6 +250,7 @@ void client(int sockfd) {
   }
 
   from_main_menu(sockfd);
+  return;
 }
 
 // Server address
@@ -185,5 +289,7 @@ int main(int argc,char **argv){
 	client(sockfd);
 
 	/* Clean up on termination */
+  printf("closing session\n");
 	close(sockfd);
+  return 0;
 }

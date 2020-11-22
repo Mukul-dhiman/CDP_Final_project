@@ -10,6 +10,12 @@
 #define MAXREQ 20
 #define MAXQUEUE 5
 
+void main_menu(int consockfd,char* name);
+void Individual_mode(int consockfd,char* name);
+
+//socket for servers
+int lstnsockfd,current_number_of_users,n; 
+
 MYSQL *con;
 
 // MySQL query implmenting functions
@@ -137,10 +143,61 @@ void remove_end_character(char* string){
   return;
 }
 
+void Give_all_topics_from_databases(char* Output_from_database){
+  // provide all topics in string
+  
+
+
+  return;
+}
+
+void Give_specific_topic_question_from_databases(char* Output_from_database,char* Request){
+  // providing a random question from that specific question
+
+
+  return;
+}
+
+
 char user_name[MAXQUEUE][20];
 
-//socket for servers
-int lstnsockfd,current_number_of_users,n; 
+void Individual_mode(int consockfd,char* name){
+  char Request[MAXREQ],Output_from_database[200]="default topics",question_from_databases[200]="default question";
+  // topics
+  memset(Request,0, MAXREQ);
+  n = read(consockfd,Request,MAXREQ-1); /* Recv */
+  Give_all_topics_from_databases(Output_from_database);
+  if (n <= 0) return;
+  n = write(consockfd, Output_from_database, strlen(Output_from_database)); /* echo*/
+
+
+  // random question from that specific topic
+  memset(Request,0, MAXREQ);
+  n = read(consockfd,Request,MAXREQ-1); /* Recv */
+  Give_specific_topic_question_from_databases(question_from_databases,Request);
+  if (n <= 0) return;
+  n = write(consockfd, question_from_databases, strlen(question_from_databases)); /* echo*/
+
+
+  //next step
+  memset(Request,0, MAXREQ);
+  n = read(consockfd,Request,MAXREQ-1); /* Recv */
+  if (n <= 0) return;
+  n = write(consockfd, Request, strlen(Request)); /* echo*/
+  
+  remove_end_character(Request);
+  if(strcmp(Request,"n")==0){
+    printf("'n' pressed\n");
+    Individual_mode(consockfd,name);
+  }
+  else if(strcmp(Request,"r")==0){
+    printf("'r' pressed\n");
+    main_menu(consockfd,name);
+  }
+  return;
+}
+
+
 void main_menu(int consockfd,char* name){
   char option[MAXREQ];
   memset(option,0, MAXREQ);
@@ -157,9 +214,8 @@ void main_menu(int consockfd,char* name){
   }
   else if(option[0]=='I'){
     //Individual
-
-
-
+    Individual_mode(consockfd,name);
+    
   }
   else{
     //Group
@@ -197,15 +253,6 @@ void server(int consockfd,int thread_id) {
   //crearing user
   memset(user_name[thread_id],0,sizeof(user_name[thread_id]));
   
-
-  // while (1) {                   
-  //   memset(reqbuf,0, MAXREQ);
-  //   n = read(consockfd,reqbuf,MAXREQ-1); /* Recv */
-    
-  //   printf("Recvd msg:%s\n", reqbuf);
-  //   if (n <= 0) return;
-  //   n = write(consockfd, reqbuf, strlen(reqbuf)); /* echo*/
-  // }
 }
 
 
