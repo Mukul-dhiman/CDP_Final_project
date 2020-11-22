@@ -45,37 +45,39 @@ void select_db(MYSQL *con)
 void addEntries(MYSQL *con, db_entry db_entries[], size_t len)
 {
 
-  char query[] = "INSERT INTO entries (topic,qtype,qtext,ans,expln) VALUES ";
+  char query[1000] = "INSERT INTO entries (topic,qtype,qtext,ans,expln) VALUES ";
 
-  char entry[] = "(";
-  strcat(entry, db_entries[0].qtopic);
-  strcat(entry, ",");
-  strcat(entry, db_entries[0].qtype);
-  strcat(entry, ",");
-  strcat(entry, db_entries[0].qtext);
-  strcat(entry, ",");
-  strcat(entry, db_entries[0].ans);
-  strcat(entry, ",");
-  strcat(entry, db_entries[0].expln);
-  strcat(entry, ")");
-  strcat(query, entry);
+  char entry[500] = "('";
+
+  strncat(entry, db_entries[0].qtopic,1000);
+  strncat(entry, "','",1000);
+  strncat(entry, db_entries[0].qtype,1000);
+  strncat(entry, "','",1000);
+  strncat(entry, db_entries[0].qtext,1000);
+  strncat(entry, "','",1000);
+  strncat(entry, db_entries[0].ans,1000);
+  strncat(entry, "','",1000);
+  strncat(entry, db_entries[0].expln,1000);
+  strncat(entry, "')",1000);
+  strncat(query, entry,1000);
 
   for (int i = 1; i < len; i++)
   {
-    char entry[] = ",(";
-    strcat(entry, db_entries[i].qtopic);
-    strcat(entry, ",");
-    strcat(entry, db_entries[i].qtype);
-    strcat(entry, ",");
-    strcat(entry, db_entries[i].qtext);
-    strcat(entry, ",");
-    strcat(entry, db_entries[i].ans);
-    strcat(entry, ",");
-    strcat(entry, db_entries[i].expln);
-    strcat(entry, ")");
-    strcat(query, entry);
+    char entry[] = ",('";
+    strncat(entry, db_entries[i].qtopic,1000);
+    strncat(entry, "','",1000);
+    strncat(entry, db_entries[i].qtype,1000);
+    strncat(entry, "','",1000);
+    strncat(entry, db_entries[i].qtext,1000);
+    strncat(entry, "','",1000);
+    strncat(entry, db_entries[i].ans,1000);
+    strncat(entry, "','",1000);
+    strncat(entry, db_entries[i].expln,1000);
+    strncat(entry, "')",1000);
+    strncat(query, entry,1000);
   }
 
+  printf("%s\n",query);
   if (mysql_query(con, query))
   {
     finish_with_error(con);
@@ -96,8 +98,8 @@ void getTopics(MYSQL *con, char *qresult)
 
   while (row = mysql_fetch_row(result))
   {
-    strcat(qresult, row[0]);
-    strcat(qresult, "\n");
+    strncat(qresult, row[0],1000);
+    strncat(qresult, "\n",1000);
   }
 }
 
@@ -118,11 +120,11 @@ void getQuestionByTopic(MYSQL *con, char *topic, db_entry qresult)
   while (row = mysql_fetch_row(result))
   {
     // row[0] is id
-    strcpy(qresult.qtopic, row[1]);
-    strcpy(qresult.qtype, row[2]);
-    strcpy(qresult.qtext, row[3]);
-    strcpy(qresult.ans, row[4]);
-    strcpy(qresult.expln, row[5]);
+    strncpy(qresult.qtopic, row[1],1000);
+    strncpy(qresult.qtype, row[2],1000);
+    strncpy(qresult.qtext, row[3],1000);
+    strncpy(qresult.ans, row[4],1000);
+    strncpy(qresult.expln, row[5],1000);
   }
 }
 
@@ -145,7 +147,7 @@ void remove_end_character(char* string){
 
 void Give_all_topics_from_databases(char* Output_from_database){
   // provide all topics in string
-  
+  getTopics(con,Output_from_database);
 
 
   return;
@@ -162,7 +164,7 @@ void Give_specific_topic_question_from_databases(char* Output_from_database,char
 char user_name[MAXQUEUE][20];
 
 void Individual_mode(int consockfd,char* name){
-  char Request[MAXREQ],Output_from_database[200]="default topics",question_from_databases[200]="default question";
+  char Request[MAXREQ],Output_from_database[200],question_from_databases[200]="default question";
   // topics
   memset(Request,0, MAXREQ);
   n = read(consockfd,Request,MAXREQ-1); /* Recv */
@@ -312,10 +314,28 @@ int main(int argc,char **argv){
     exit(1);
   }
 
-  if (mysql_real_connect(con, "localhost", "root", "", NULL, 0, NULL, 0) == NULL)
+  if (mysql_real_connect(con, "localhost", "root", "Mukul@147", NULL, 0, NULL, 0) == NULL)
   {
     finish_with_error(con);
   }
+
+  select_db(con);
+
+  struct db_entry entry[2];
+
+  strncpy(entry[0].ans,"1ans",1000);
+  strncpy(entry[0].expln,"1expn",1000);
+  strncpy(entry[0].qtext,"1qtext",1000);
+  strncpy(entry[0].qtopic,"1qtopic",1000);
+  strncpy(entry[0].qtype,"1qtype",1000);
+  strncpy(entry[1].ans,"2ans",1000);
+  strncpy(entry[1].expln,"2expn",1000);
+  strncpy(entry[1].qtext,"2qtext",1000);
+  strncpy(entry[1].qtopic,"2qtopic",1000);
+  strncpy(entry[1].qtype,"2qtype",1000);
+  
+  addEntries(con,entry,2);
+
 
   memset((char *) &serv_addr,0, sizeof(serv_addr));
   serv_addr.sin_family      = AF_INET;
