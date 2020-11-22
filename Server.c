@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <pthread.h>
+#include <mysql/mysql.h>
 #define MAXREQ 20
 #define MAXQUEUE 5
 
@@ -14,6 +15,118 @@ void Individual_mode(int consockfd,char* name);
 
 //socket for servers
 int lstnsockfd,current_number_of_users,n; 
+
+MYSQL *con;
+
+// MySQL query implmenting functions
+
+typedef struct db_entry
+{
+  char qtopic[50], qtype[50], qtext[1024], ans[256], expln[1024];
+} db_entry;
+
+void finish_with_error(MYSQL *con)
+{
+  fprintf(stderr, "%s\n", mysql_error(con));
+  mysql_close(con);
+  exit(1);
+}
+
+void select_db(MYSQL *con)
+{
+
+  if (mysql_query(con, "use cn_db"))
+  {
+    finish_with_error(con);
+  }
+
+}
+
+void addEntries(MYSQL *con, db_entry db_entries[], size_t len)
+{
+
+  char query[] = "INSERT INTO entries (topic,qtype,qtext,ans,expln) VALUES ";
+
+  char entry[] = "(";
+  strcat(entry, db_entries[0].qtopic);
+  strcat(entry, ",");
+  strcat(entry, db_entries[0].qtype);
+  strcat(entry, ",");
+  strcat(entry, db_entries[0].qtext);
+  strcat(entry, ",");
+  strcat(entry, db_entries[0].ans);
+  strcat(entry, ",");
+  strcat(entry, db_entries[0].expln);
+  strcat(entry, ")");
+  strcat(query, entry);
+
+  for (int i = 1; i < len; i++)
+  {
+    char entry[] = ",(";
+    strcat(entry, db_entries[i].qtopic);
+    strcat(entry, ",");
+    strcat(entry, db_entries[i].qtype);
+    strcat(entry, ",");
+    strcat(entry, db_entries[i].qtext);
+    strcat(entry, ",");
+    strcat(entry, db_entries[i].ans);
+    strcat(entry, ",");
+    strcat(entry, db_entries[i].expln);
+    strcat(entry, ")");
+    strcat(query, entry);
+  }
+
+  if (mysql_query(con, query))
+  {
+    finish_with_error(con);
+  }
+
+}
+
+void getTopics(MYSQL *con, char *qresult)
+{
+  char query[] = "SELECT DISTINCT topic from entries";
+  if (mysql_query(con, query))
+  {
+    finish_with_error(con);
+  }
+  MYSQL_RES *result = mysql_store_result(con);
+  int num_fields = mysql_num_fields(result);
+  MYSQL_ROW row;
+
+  while (row = mysql_fetch_row(result))
+  {
+    strcat(qresult, row[0]);
+    strcat(qresult, "\n");
+  }
+}
+
+void getQuestionByTopic(MYSQL *con, char *topic, db_entry qresult)
+{
+  char query[] = "SELECT * FROM entries where topic='";
+  strcat(query, topic);
+  strcat(query, "' ORDER BY RAND() LIMIT 1");
+
+  if (mysql_query(con, query))
+  {
+    finish_with_error(con);
+  }
+
+  MYSQL_RES *result = mysql_store_result(con);
+  int num_fields = mysql_num_fields(result);
+  MYSQL_ROW row;
+  while (row = mysql_fetch_row(result))
+  {
+    // row[0] is id
+    strcpy(qresult.qtopic, row[1]);
+    strcpy(qresult.qtype, row[2]);
+    strcpy(qresult.qtext, row[3]);
+    strcpy(qresult.ans, row[4]);
+    strcpy(qresult.expln, row[5]);
+  }
+}
+
+// MySQL queries end
 
 void error(const char *msg){
   perror(msg);
@@ -191,6 +304,18 @@ int main(int argc,char **argv){
   current_number_of_users=0;
   int portno = 5033;
   struct sockaddr_in serv_addr, cli_addr;
+
+  con = mysql_init(NULL);
+  if (con == NULL)
+  {
+    fprintf(stderr, "%s\n", mysql_error(con));
+    exit(1);
+  }
+
+  if (mysql_real_connect(con, "localhost", "root", "", NULL, 0, NULL, 0) == NULL)
+  {
+    finish_with_error(con);
+  }
 
   memset((char *) &serv_addr,0, sizeof(serv_addr));
   serv_addr.sin_family      = AF_INET;
