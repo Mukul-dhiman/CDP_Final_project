@@ -16,6 +16,8 @@ void Individual_mode(int consockfd,char* name);
 //socket for servers
 int lstnsockfd,current_number_of_users,n; 
 
+
+// Mysql database
 MYSQL *con;
 
 // MySQL query implmenting functions
@@ -45,7 +47,7 @@ void select_db(MYSQL *con)
 void addEntries(MYSQL *con, db_entry db_entries[], size_t len)
 {
 
-  char query[1000] = "INSERT INTO entries (topic,qtype,qtext,ans,expln) VALUES ";
+  char query[10000] = "INSERT INTO entries (topic,qtype,qtext,ans,expln) VALUES ";
 
   char entry[500] = "('";
 
@@ -77,7 +79,6 @@ void addEntries(MYSQL *con, db_entry db_entries[], size_t len)
     strncat(query, entry,1000);
   }
 
-  printf("%s\n",query);
   if (mysql_query(con, query))
   {
     finish_with_error(con);
@@ -87,7 +88,7 @@ void addEntries(MYSQL *con, db_entry db_entries[], size_t len)
 
 void getTopics(MYSQL *con, char *qresult)
 {
-  char query[] = "SELECT DISTINCT topic from entries";
+  char query[10000] = "SELECT DISTINCT topic from entries";
   if (mysql_query(con, query))
   {
     finish_with_error(con);
@@ -98,9 +99,11 @@ void getTopics(MYSQL *con, char *qresult)
 
   while (row = mysql_fetch_row(result))
   {
+    printf("%s - ",row[0]);
     strncat(qresult, row[0],1000);
     strncat(qresult, "\n",1000);
   }
+  printf("\n");
 }
 
 void getQuestionByTopic(MYSQL *con, char *topic, db_entry qresult)
@@ -148,14 +151,14 @@ void remove_end_character(char* string){
 void Give_all_topics_from_databases(char* Output_from_database){
   // provide all topics in string
   getTopics(con,Output_from_database);
-
-
   return;
 }
 
 void Give_specific_topic_question_from_databases(char* Output_from_database,char* Request){
   // providing a random question from that specific question
-
+  struct db_entry temp;
+  getQuestionByTopic(con, Request,temp);
+  memset(Output_from_database,0,10000);
 
   return;
 }
@@ -164,7 +167,7 @@ void Give_specific_topic_question_from_databases(char* Output_from_database,char
 char user_name[MAXQUEUE][20];
 
 void Individual_mode(int consockfd,char* name){
-  char Request[MAXREQ],Output_from_database[200],question_from_databases[200]="default question";
+  char Request[MAXREQ],Output_from_database[10000],question_from_databases[10000]="default question";
   // topics
   memset(Request,0, MAXREQ);
   n = read(consockfd,Request,MAXREQ-1); /* Recv */
@@ -314,12 +317,16 @@ int main(int argc,char **argv){
     exit(1);
   }
 
-  if (mysql_real_connect(con, "localhost", "root", "Mukul@147", NULL, 0, NULL, 0) == NULL)
+  if (mysql_real_connect(con, "localhost", "root", "", NULL, 0, NULL, 0) == NULL)
   {
     finish_with_error(con);
   }
 
   select_db(con);
+
+
+
+  //************************
 
   struct db_entry entry[2];
 
@@ -336,6 +343,7 @@ int main(int argc,char **argv){
   
   addEntries(con,entry,2);
 
+  //***********************************
 
   memset((char *) &serv_addr,0, sizeof(serv_addr));
   serv_addr.sin_family      = AF_INET;
